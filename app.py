@@ -68,7 +68,7 @@ if st.button("Summarize the Content from YT or Website"):
                 if "youtube.com" in generic_url or "youtu.be" in generic_url:
                     try:
                         # loader=YoutubeLoader.from_youtube_url(generic_url,add_video_info=True)
-                        docs= load_youtube_safe("https://www.youtube.com/watch?v=JcVHf4X_dqY")
+                        docs= load_youtube_safe(generic_url)
                     except Exception as e:
                         st.exception(f"Exception:{e}")
                 else:
