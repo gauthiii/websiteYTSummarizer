@@ -6,23 +6,55 @@ from langchain_community.document_loaders import YoutubeLoader,UnstructuredURLLo
 
 
 
-from langchain_community.document_loaders import YoutubeLoader
 
-def load_youtube_safe(youtube_url):
-    """
-    Load YouTube transcript with YoutubeLoader but disable video info
-    """
+from langchain_community.document_loaders import YoutubeLoader
+import re
+from langchain.schema import Document as documo
+
+from youtube_transcript_api import YouTubeTranscriptApi
+
+
+def _vid(url: str):
+    m = re.search(r"(?:v=|youtu\.be/|/shorts/)([A-Za-z0-9_-]{11})", url)
+    return m.group(1) if m else None
+
+def load_youtube_safe(youtube_url: str):
     try:
+        video_id = _vid(youtube_url)
+        ytt_api = YouTubeTranscriptApi()
+        fetched_transcript = ytt_api.fetch(video_id)
+
+        # is iterable
+        s=""
+        for snippet in fetched_transcript:
+            # print(snippet.text)
+            s=s+" "+snippet.text
+
+        # print("****")
+        # print(len(s))
+
+        print(s)
+
+        return [documo(page_content=s, metadata={"source": youtube_url, "status": "transcripts"})]
+
+
+        
+
+
         loader = YoutubeLoader.from_youtube_url(
             youtube_url,
-            add_video_info=False,  # This prevents pytube issues
-            language=['en', 'en-US']  # Specify language preferences
+            add_video_info=False,   # skip pytube metadata
+            language=["en", "en-US"]
         )
-        docs = loader.load()
+        docs= loader.load()       # returns [Document(...), ...]
+        print(docs)
         return docs
     except Exception as e:
-        print(f"YoutubeLoader failed: {e}")
-        return None
+        from langchain.schema import Document
+        msg = f"Unable to return the transcripts of the video because of this error: {e}"
+        return [Document(page_content=msg, metadata={"source": youtube_url, "status": "error"})]
+
+
 
 
 ## sstreamlit APP
@@ -68,7 +100,9 @@ if st.button("Summarize the Content from YT or Website"):
                 if "youtube.com" in generic_url or "youtu.be" in generic_url:
                     try:
                         # loader=YoutubeLoader.from_youtube_url(generic_url,add_video_info=True)
+                        # docs= load_youtube_safe("https://www.youtube.com/watch?v=JcVHf4X_dqY")
                         docs= load_youtube_safe(generic_url)
+                        # print(docs)
                     except Exception as e:
                         st.exception(f"Exception:{e}")
                 else:
