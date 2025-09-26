@@ -33,7 +33,8 @@ def load_youtube_safe(youtube_url: str):
         # print("****")
         # print(len(s))
 
-        print(s)
+        # print(s)
+        print(len(s))
 
         return [documo(page_content=s, metadata={"source": youtube_url, "status": "transcripts"})]
 
@@ -120,7 +121,7 @@ if st.button("Summarize the Content from YT or Website"):
                 full_text = " ".join([doc.page_content for doc in docs])
 
                 # Define max tokens you want to allow
-                MAX_TOKENS = 3000  
+                MAX_TOKENS = 9000  
 
                 # Initialize splitter
                 token_splitter = TokenTextSplitter(chunk_size=MAX_TOKENS, chunk_overlap=0)
@@ -133,7 +134,7 @@ if st.button("Summarize the Content from YT or Website"):
 
                 # Count tokens
                 num_tokens = len(token_splitter.split_text(trimmed_text))
-                st.write(f"Document trimmed to {num_tokens} tokens (max {MAX_TOKENS})")
+                st.write(f"Document trimmed(max {MAX_TOKENS})")
 
                 # Replace docs with trimmed one for summarization
                 from langchain.schema import Document
